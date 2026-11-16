@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="bg">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
+  <title>Дивият Балкан</title>
+  <link rel="stylesheet"
+        href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="#top">Дивият Балкан</a>
+    <nav aria-label="Основна навигация">
+      <a href="#offers">Оферти</a>
+      <a href="#about">За нас</a>
+      <a href="#booking">Заявка</a>
+      <a href="{{ url_for('bookings') }}">Заявки</a>
+
+      {% if session.get("user_id") %}
+        <span>{{ session["username"] }} ({{ session["role"] }})</span>
+
+        {% if session.get("role") == "public" %}
+          <a href="{{ url_for('my_bookings') }}">Моите резервации</a>
+        {% endif %}
+
+        {% if session.get("role") in ["admin", "operator"] %}
+          <a href="{{ url_for('admin_tours') }}">Админ</a>
+        {% endif %}
+
+        <form method="post" action="{{ url_for('logout') }}" style="display:inline;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="button" type="submit">Изход</button>
+        </form>
+      {% else %}
+        <a href="{{ url_for('login') }}">Вход</a>
+        <a href="{{ url_for('register_public') }}">Регистрация</a>
+      {% endif %}
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="container hero-content">
+      <p class="eyebrow">Приключенски туризъм в малки групи</p>
+      <h1>Открий дивата страна на Врачанския Балкан</h1>
+      <p>Малки приключения сред Балкана, големи спомени.</p>
+      <a class="button" href="#offers">Разгледай офертите</a>
+    </div>
+  </section>
+
+  <section id="offers" class="section container">
+    <h2>Нашите предложения</h2>
+    <p class="lead">Изберете приключение и изпратете заявка.</p>
+
+    <div class="cards">
+    {% for tour in tours %}
+      <article class="card">
+        {% if tour["image_url"] %}
+          <img src="{{ tour['image_url'] }}"
+               alt="{{ tour['name'] }}">
+        {% endif %}
+
+        <div class="card-body">
+          <h2>{{ tour["name"] }}</h2>
+          <p>{{ tour["location"] }}</p>
+          <p>{{ tour["description"] }}</p>
+          <p class="price">
+            {{ "%.2f"|format(tour["price"]) }} лв.
+          </p>
+          <a href="{{ url_for('tour_detail', tour_id=tour['id']) }}">
+            Виж подробности
+          </a>
+        </div>
+      </article>
+    {% endfor %}
+    </div>
+  </section>
+
+  <section id="about" class="section section-soft">
+    <div class="container narrow">
+      <h2>Защо „Дивият Балкан“?</h2>
+      <p>Ние сме местни водачи от Враца. Работим с малки групи и ясни правила за безопасност.</p>
+    </div>
+  </section>
+
+  <section id="booking" class="section container narrow">
+    <h2>Изпрати заявка</h2>
+    <p>Попълнете учебна заявка. Не въвеждайте реални лични данни.</p>
+
+    <form method="post" action="{{ url_for('booking') }}">
+
+      <div class="field">
+        <label for="customer_name">Име</label>
+        <input id="customer_name" name="customer_name" type="text" required>
+      </div>
+
+      <div class="field">
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="email" required>
+      </div>
+
+      <div class="field">
+        <label for="phone">Телефон</label>
+        <input id="phone" name="phone" type="tel" required>
+      </div>
+
+      <div class="field">
+        <label for="tour_id">Избрана оферта</label>
+        <select id="tour_id" name="tour_id" required>
+          <option value="">-- Изберете --</option>
+          {% for tour in tours %}
+          <option value="{{ tour['id'] }}">
+            {{ tour["name"] }} — {{ tour["price"] }} лв.
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="level">Ниво на физическа подготовка</label>
+        <select id="level" name="level" required>
+          <option value="">-- Изберете --</option>
+          <option value="начинаещ">Начинаещ</option>
+          <option value="средно">Средно ниво</option>
+          <option value="напреднал">Напреднал</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="participants">Брой участници</label>
+        <input id="participants" name="participants" type="number"
+               min="1" max="12" value="2" required>
+      </div>
+
+      <div class="field">
+        <label for="preferred_date">Предпочитана дата</label>
+        <input id="preferred_date" name="preferred_date" type="date" required>
+      </div>
+
+      <button class="button" type="submit">Изпрати заявка</button>
+
+    </form>
+  </section>
+</main>
+
+<footer class="section container">
+  <p>Учебен проект „Дивият Балкан“</p>
+</footer>
+
+</body>
+</html>

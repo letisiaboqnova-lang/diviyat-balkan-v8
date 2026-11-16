@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Управление на оферти | Дивият Балкан</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+
+<main class="section container">
+
+    <p>
+      Влезли сте като:
+      {{ session["username"] }}
+      ({{ session["role"] }})
+    </p>
+
+    <form method="post" action="{{ url_for('logout') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit">Logout</button>
+    </form>
+
+    <p>
+      <a href="{{ url_for('booking_list') }}">Bookings</a>
+      {% if session.get("role") == "admin" %}
+        | <a href="{{ url_for('admin_users') }}">Потребители</a>
+      {% endif %}
+      | <a href="{{ url_for('home') }}">Публичен каталог</a>
+    </p>
+
+    <h1>Управление на туристическите оферти</h1>
+
+    {% if session.get("role") in ["admin", "operator"] %}
+    <p>
+        <a href="{{ url_for('tour_create') }}">
+            + Нова оферта
+        </a>
+    </p>
+    {% endif %}
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Име</th>
+                <th>Цена</th>
+                <th>Активна</th>
+                <th>Operator ID</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for tour in tours %}
+            <tr>
+                <td>{{ tour["id"] }}</td>
+                <td>{{ tour["name"] }}</td>
+                <td>{{ tour["price"] }} лв.</td>
+                <td>{{ "Да" if tour["is_active"] else "Не" }}</td>
+                <td>{{ tour["operator_id"] if tour["operator_id"] else "—" }}</td>
+                <td>
+                    {% if session.get("role") == "admin"
+                       or (
+                           session.get("role") == "operator"
+                           and tour["operator_id"] == session.get("user_id")
+                       )
+                    %}
+                    <a href="{{ url_for('tour_edit', tour_id=tour['id']) }}">
+                        Редактирай
+                    </a>
+
+                    {% if tour["is_active"] %}
+                    <form method="post"
+                          action="{{ url_for('tour_deactivate', tour_id=tour['id']) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit">Деактивирай</button>
+                    </form>
+                    {% endif %}
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+</main>
+
+</body>
+</html>

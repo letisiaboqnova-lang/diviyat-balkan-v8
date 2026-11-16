@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Моите резервации | Дивият Балкан</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+
+<main class="section container">
+
+    <p>
+      Влезли сте като:
+      {{ session["username"] }}
+      ({{ session["role"] }})
+    </p>
+
+    <form method="post" action="{{ url_for('logout') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit">Logout</button>
+    </form>
+
+    <h1>Моите резервации</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Оферта</th>
+                <th>Място</th>
+                <th>Дата</th>
+                <th>Участници</th>
+                <th>Телефон</th>
+                <th>Ниво</th>
+                <th>Статус</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for booking in bookings %}
+            <tr>
+                <td>{{ booking["tour_name"] }}</td>
+                <td>{{ booking["location"] }}</td>
+                <td>{{ booking["departure_date"] }}</td>
+                <td>{{ booking["participants"] }}</td>
+                <td>{{ booking["phone"] or "—" }}</td>
+                <td>{{ booking["level"] or "—" }}</td>
+                <td>{{ booking["status"] }}</td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7">Все още нямате резервации.</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <p>
+        <a href="{{ url_for('home') }}">← Към каталога</a>
+    </p>
+
+</main>
+
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>{{ "Редакция на оферта" if tour else "Нова оферта" }} | Дивият Балкан</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+
+<main class="section container narrow">
+
+    <p>
+        <a href="{{ url_for('admin_tours') }}">← Към офертите</a>
+    </p>
+
+    <h1>{{ "Редакция на оферта" if tour else "Нова оферта" }}</h1>
+
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <label>Code
+        <input name="code"
+               value="{{ tour['code'] if tour else '' }}"
+               {% if tour %}readonly{% endif %}
+               required>
+      </label>
+
+      <label>Име
+        <input name="name"
+               value="{{ tour['name'] if tour else '' }}"
+               required>
+      </label>
+
+      <label>Място
+        <input name="location"
+               value="{{ tour['location'] if tour and tour['location'] else '' }}"
+               required>
+      </label>
+
+      <label>Описание
+        <textarea name="description" required>{{ tour["description"] if tour and tour["description"] else "" }}</textarea>
+      </label>
+
+      <label>Цена
+        <input name="price" type="number" step="0.01"
+               value="{{ tour['price'] if tour else '' }}"
+               required>
+      </label>
+
+      <label>Капацитет
+        <input name="capacity" type="number" min="1"
+               value="{{ tour['capacity'] if tour and tour['capacity'] else '' }}"
+               required>
+      </label>
+
+      <label>Latitude
+        <input name="latitude"
+               type="number"
+               step="any"
+               value="{{ tour['latitude'] if tour and tour['latitude'] is not none else '' }}">
+      </label>
+
+      <label>Longitude
+        <input name="longitude"
+               type="number"
+               step="any"
+               value="{{ tour['longitude'] if tour and tour['longitude'] is not none else '' }}">
+      </label>
+
+      <label>Google Maps query
+        <input name="map_query"
+               value="{{ tour['map_query'] if tour and tour['map_query'] else '' }}"
+               placeholder="напр. Враца, България">
+      </label>
+
+      <label>Image URL
+        <input name="image_url"
+               value="{{ tour['image_url'] if tour and tour['image_url'] else '' }}">
+      </label>
+
+      {% if not tour and session.get("role") == "admin" %}
+      <label>Operator ID (по желание)
+        <input name="operator_id" type="number" min="1">
+      </label>
+      {% endif %}
+
+      <button type="submit">Запази</button>
+    </form>
+
+</main>
+
+</body>
+</html>

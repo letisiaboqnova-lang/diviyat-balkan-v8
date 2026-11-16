@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>{{ tour["name"] }} | Дивият Балкан</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+
+<main class="section container narrow">
+
+    <p>
+        <a href="{{ url_for('home') }}">
+            ← Обратно към каталога
+        </a>
+    </p>
+
+    {% if tour["image_url"] %}
+    <img src="{{ tour['image_url'] }}"
+         alt="{{ tour['name'] }}">
+    {% endif %}
+
+    <h1>{{ tour["name"] }}</h1>
+
+    <p><strong>Място:</strong>
+       {{ tour["location"] }}</p>
+
+    <p>{{ tour["description"] }}</p>
+
+    <p><strong>Цена:</strong>
+       {{ "%.2f"|format(tour["price"]) }} лв.</p>
+
+    <p><strong>Капацитет:</strong>
+       {{ tour["capacity"] }} участници</p>
+
+    <section class="map-section">
+      <h2>Местоположение</h2>
+      <p>{{ tour["location"] }}</p>
+
+      {% if tour["map_query"] %}
+      <a
+        href="https://www.google.com/maps/search/?api=1&query={{ tour['map_query']|urlencode }}"
+        target="_blank"
+        rel="noopener">
+        Отвори в Google Maps
+      </a>
+      {% endif %}
+    </section>
+
+    <h2>Налични дати</h2>
+
+    {% for departure in departures %}
+      <div class="departure">
+        <strong>{{ departure["departure_date"] }}</strong>
+        — свободни места: {{ departure["available"] }}
+        от {{ departure["capacity"] }}
+      </div>
+    {% else %}
+      <p>Няма публикувани дати.</p>
+    {% endfor %}
+
+    <h2>Резервация</h2>
+
+    {% if session.get("role") == "public" %}
+
+    <form method="post"
+          action="{{ url_for('booking_create') }}">
+
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <label>Дата
+        <select name="departure_id" required>
+          <option value="">-- Изберете --</option>
+          {% for departure in departures %}
+          <option value="{{ departure['id'] }}">
+            {{ departure["departure_date"] }}
+            (свободни: {{ departure["available"] }})
+          </option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label>Име
+        <input name="customer_name" required>
+      </label>
+
+      <label>E-mail
+        <input name="email" type="email" required>
+      </label>
+
+      <label>Телефон
+        <input name="phone" type="tel" required>
+      </label>
+
+      <label>Участници
+        <input name="participants"
+               type="number"
+               min="1"
+               max="12"
+               value="1"
+               required>
+      </label>
+
+      <label>Ниво на физическа подготовка
+        <select name="level" required>
+          <option value="">-- Изберете --</option>
+          <option value="начинаещ">Начинаещ</option>
+          <option value="средно">Средно</option>
+          <option value="напреднал">Напреднал</option>
+        </select>
+      </label>
+
+      <button type="submit">Изпрати booking request</button>
+    </form>
+
+    {% elif session.get("role") in ["admin", "operator"] %}
+
+    <p>Резервации правят само туристи (public). Вие сте влезли като {{ session["role"] }}.</p>
+
+    {% else %}
+
+    <p>
+      За да резервирате,
+      <a href="{{ url_for('login') }}">влезте в профила си</a>
+      или
+      <a href="{{ url_for('register_public') }}">се регистрирайте</a>.
+    </p>
+
+    {% endif %}
+
+</main>
+
+</body>
+</html>
